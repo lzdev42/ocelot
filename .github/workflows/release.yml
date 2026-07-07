@@ -20,6 +20,8 @@ jobs:
     outputs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
       - name: Get version
         id: get_version
         run: |
@@ -31,13 +33,50 @@ jobs:
             echo "version=0.0.0-dev" >> $GITHUB_OUTPUT
           fi
 
+      - name: Extract changelog for release
+        id: changelog
+        env:
+          VERSION: ${{ steps.get_version.outputs.version }}
+        run: |
+          HAS_CHANGELOG=$(node - <<'NODE'
+          const fs = require('fs');
+          const version = process.env.VERSION;
+          const changelogPath = 'CHANGELOG.md';
+          let body = '';
+
+          if (fs.existsSync(changelogPath)) {
+            const changelog = fs.readFileSync(changelogPath, 'utf8');
+            const sections = changelog.split(/^## /m);
+            const section = sections.find(s => s.startsWith('[' + version + ']'));
+            if (section) {
+              body = ('## ' + section).trim();
+              console.log('Found changelog section for ' + version);
+            } else {
+              console.log('No changelog section for ' + version + ', will use auto-generated notes');
+            }
+          } else {
+            console.log('CHANGELOG.md not found, will use auto-generated notes');
+          }
+
+          fs.mkdirSync('artifacts', { recursive: true });
+          if (body) {
+            fs.writeFileSync('artifacts/release-notes.md', body + '\n');
+            process.stdout.write('true');
+          } else {
+            process.stdout.write('false');
+          }
+          NODE
+          )
+          echo "has_changelog=$HAS_CHANGELOG" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release (draft)
         id: create_release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
           draft: true
-          generate_release_notes: true
+          generate_release_notes: ${{ steps.changelog.outputs.has_changelog != 'true' }}
+          body_path: ${{ steps.changelog.outputs.has_changelog == 'true' && 'artifacts/release-notes.md' || '' }}
           name: Ocelot v${{ steps.get_version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -71,8 +110,6 @@ jobs:
 
       - name: Bump version in package.json files
         run: node scripts/bump-version.mjs ${{ needs.create-release.outputs.version }}
-        env:
-          VERSION: ${{ needs.create-release.outputs.version }}
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
