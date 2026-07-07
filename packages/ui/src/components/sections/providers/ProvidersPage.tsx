@@ -359,6 +359,22 @@ export const ProvidersPage: React.FC = () => {
     }
   };
 
+  const handleConnectPasswordless = async (providerId: string) => {
+    const busyKey = `api:${providerId}`;
+    setAuthBusyKey(busyKey);
+
+    try {
+      await reloadOpenCodeConfiguration({ scopes: ["providers"], mode: "active" });
+      toast.success(t('settings.providers.page.toast.providerConnected'));
+      setSelectedProvider(providerId);
+    } catch (error) {
+      console.error('Failed to connect provider:', error);
+      toast.error(t('settings.providers.page.toast.providerConnectFailed'));
+    } finally {
+      setAuthBusyKey(null);
+    }
+  };
+
   const handleOAuthStart = async (providerId: string, methodIndex: number) => {
     const busyKey = `oauth:${providerId}:${methodIndex}`;
     setAuthBusyKey(busyKey);
@@ -619,6 +635,20 @@ export const ProvidersPage: React.FC = () => {
 
               {authLoading ? (
                 <p className="typography-meta text-muted-foreground px-2">{t('settings.providers.page.auth.loadingMethods')}</p>
+              ) : candidateProviderId === 'airouter' ? (
+                <section className="px-2 pb-2 pt-0 space-y-4">
+                  <p className="typography-meta text-muted-foreground py-1.5">
+                    {t('settings.providers.page.auth.airouterNoKeyHint')}
+                  </p>
+                  <Button
+                    size="xs"
+                    className="!font-normal"
+                    onClick={() => handleConnectPasswordless(candidateProviderId)}
+                    disabled={authBusyKey === `api:${candidateProviderId}`}
+                  >
+                    {authBusyKey === `api:${candidateProviderId}` ? t('settings.providers.page.actions.saving') : t('settings.providers.page.auth.airouterConnect')}
+                  </Button>
+                </section>
               ) : (
                 <section className="px-2 pb-2 pt-0 space-y-4">
                   <div className="py-1.5">
@@ -822,6 +852,20 @@ export const ProvidersPage: React.FC = () => {
               </div>
             ) : authLoading ? (
               <div className="py-1.5 typography-meta text-muted-foreground">{t('settings.providers.page.auth.loadingMethods')}</div>
+            ) : selectedProvider.id === 'airouter' ? (
+              <div className="space-y-4">
+                <p className="typography-meta text-muted-foreground py-1.5">
+                  {t('settings.providers.page.auth.airouterNoKeyHint')}
+                </p>
+                <Button
+                  size="xs"
+                  className="!font-normal"
+                  onClick={() => handleConnectPasswordless(selectedProvider.id)}
+                  disabled={authBusyKey === `api:${selectedProvider.id}`}
+                >
+                  {authBusyKey === `api:${selectedProvider.id}` ? t('settings.providers.page.actions.saving') : t('settings.providers.page.auth.airouterConnect')}
+                </Button>
+              </div>
             ) : (
               <div className="space-y-4">
                 <div className="py-1.5">

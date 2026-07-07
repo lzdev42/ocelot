@@ -22,6 +22,12 @@ async function writeOpenCodeConfig(config) {
   await fs.promises.writeFile(OPENCODE_CONFIG_PATH, JSON.stringify(config, null, 2), 'utf8');
 }
 
+const AIROUTER_DEFAULT_LIMIT = Object.freeze({
+  context: 200000,
+  input: 184000,
+  output: 16000,
+});
+
 function buildModelsFromRoutes(routes) {
   const models = {};
   if (!routes || typeof routes !== 'object' || Array.isArray(routes)) {
@@ -32,7 +38,18 @@ function buildModelsFromRoutes(routes) {
     const name = typeof routeValue.name === 'string' && routeValue.name.length > 0
       ? routeValue.name
       : routeKey;
-    models[routeKey] = { name };
+    const limit = {
+      context: Number.isFinite(routeValue?.limit?.context) && routeValue.limit.context > 0
+        ? Math.trunc(routeValue.limit.context)
+        : AIROUTER_DEFAULT_LIMIT.context,
+      input: Number.isFinite(routeValue?.limit?.input) && routeValue.limit.input > 0
+        ? Math.trunc(routeValue.limit.input)
+        : AIROUTER_DEFAULT_LIMIT.input,
+      output: Number.isFinite(routeValue?.limit?.output) && routeValue.limit.output > 0
+        ? Math.trunc(routeValue.limit.output)
+        : AIROUTER_DEFAULT_LIMIT.output,
+    };
+    models[routeKey] = { name, limit };
   }
   return models;
 }

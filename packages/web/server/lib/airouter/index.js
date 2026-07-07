@@ -5,7 +5,7 @@ import { injectAirouterProvider, removeAirouterProvider } from './provider-injec
 
 export function createAirouterRouter({ webPort, configDir, refreshFn }) {
   const router = express.Router();
-  router.use(express.json());
+  router.use(express.json({ limit: '50mb' }));
 
   let currentConfig = null;
   const ensureConfig = async () => {

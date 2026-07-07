@@ -52,6 +52,16 @@ const readApiError = async (response: Response, fallback: string): Promise<strin
   return typeof data?.error === 'string' && data.error.trim() ? data.error : fallback;
 };
 
+// AI Router logs store timestamps in UTC (ISO 8601); convert to the user's
+// local system time for display. Format matches the previous HH:MM:SS slice.
+const formatLogTime = (iso: string): string =>
+  new Date(iso).toLocaleTimeString(undefined, {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+
 // ===== Params Editor =====
 const ParamsEditor: React.FC<{
   params: Record<string, ParamValue>;
@@ -460,7 +470,7 @@ const LogPanel: React.FC = () => {
           logs.slice().reverse().map((log, i) => (
             <div key={i} className="flex gap-2 px-1 py-0.5">
               <span className="text-muted-foreground/40 flex-shrink-0">
-                {log.time.slice(11, 19)}
+                {formatLogTime(log.time)}
               </span>
               <span className={`flex-shrink-0 w-10 ${levelColor(log.level)}`}>
                 {log.level.toUpperCase()}

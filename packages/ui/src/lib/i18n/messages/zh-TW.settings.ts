@@ -1,4 +1,4 @@
-﻿export const settingsDict = {
+export const settingsDict = {
   'settings.appearance.language.label': '語言',
   'settings.appearance.language.description': '選擇介面語言。',
   'settings.appearance.language.select': '選擇語言',
@@ -1070,6 +1070,8 @@
   'settings.providers.page.auth.apiKeyLabel': 'API Key',
   'settings.providers.page.auth.apiKeyTooltip': '金鑰將直接送出給 OpenCode，不會由 Ocelot 儲存。',
   'settings.providers.page.auth.apiKeyPlaceholder': 'sk-...',
+  'settings.providers.page.auth.airouterNoKeyHint': 'AI Router 是由 Ocelot 管理的本機代理。API Key 在 AI Router 設定中按路由設定,此處無需填寫。',
+  'settings.providers.page.auth.airouterConnect': '連線',
   'settings.providers.page.auth.oauthMethodFallback': 'OAuth 方式 {index}',
   'settings.providers.page.auth.pasteAuthorizationCodePlaceholder': '貼上授權碼',
   'settings.providers.page.auth.connected': '已連線',
@@ -1111,6 +1113,8 @@
   'settings.providers.page.toast.apiKeyRequired': 'API Key 為必填項',
   'settings.providers.page.toast.apiKeySaveFailed': '儲存 API Key 失敗',
   'settings.providers.page.toast.apiKeySaved': 'API Key 已儲存',
+  'settings.providers.page.toast.providerConnected': '供應商已連線',
+  'settings.providers.page.toast.providerConnectFailed': '連線供應商失敗',
   'settings.providers.page.toast.oauthStartFailed': '啟動 OAuth 流程失敗',
   'settings.providers.page.toast.oauthDetailsMissing': '未回傳 OAuth 詳情',
   'settings.providers.page.toast.completeOAuthInBrowser': '請在瀏覽器中完成 OAuth 流程',
