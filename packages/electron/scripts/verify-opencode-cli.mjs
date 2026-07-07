@@ -24,6 +24,12 @@ const runVersion = (binaryPath) => {
   return (result.stdout || '').trim().split(/\s+/)[0] || '';
 };
 
+const canExecuteCrossArch = (targetArch) => {
+  if (!targetArch || targetArch === process.arch) return true;
+  if (process.platform === 'darwin' && process.arch === 'arm64' && targetArch === 'x64') return true;
+  return false;
+};
+
 const assertBinary = (binaryPath) => {
   if (!fs.existsSync(binaryPath)) {
     throw new Error(`Bundled OpenCode CLI not found: ${binaryPath}`);
@@ -35,6 +41,13 @@ const assertBinary = (binaryPath) => {
   if (process.platform !== 'win32' && (stat.mode & 0o111) === 0) {
     throw new Error(`Bundled OpenCode CLI is not executable: ${binaryPath}`);
   }
+
+  const targetArch = process.env.ELECTRON_BUILDER_ARCH;
+  if (!canExecuteCrossArch(targetArch)) {
+    console.log(`[electron] skipped executing bundled OpenCode CLI for cross-compilation (target: ${targetArch}, host: ${process.arch}): ${binaryPath}`);
+    return;
+  }
+
   const actualVersion = runVersion(binaryPath);
   if (!actualVersion) {
     throw new Error(`Bundled OpenCode CLI at ${binaryPath} did not report a version`);

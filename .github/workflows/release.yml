@@ -210,6 +210,8 @@ jobs:
       - name: Prepare bundled OpenCode CLI
         working-directory: packages/electron
         shell: bash
+        env:
+          ELECTRON_BUILDER_ARCH: ${{ matrix.arch }}
         run: |
           bun run prepare:opencode-cli
           bun run verify:opencode-cli
@@ -226,6 +228,8 @@ jobs:
       - name: Build Windows app
         working-directory: packages/electron
         shell: bash
+        env:
+          ELECTRON_BUILDER_ARCH: ${{ matrix.arch }}
         run: |
           node ./scripts/package.mjs --win --${{ matrix.arch }} --publish=never
           bun run verify:opencode-cli:packaged

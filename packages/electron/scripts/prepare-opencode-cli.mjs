@@ -76,7 +76,8 @@ const resolveVersion = async () => {
 };
 
 const artifactForCurrentPlatform = () => {
-  const { platform, arch } = process;
+  const platform = process.platform;
+  const arch = process.env.ELECTRON_BUILDER_ARCH || process.arch;
   if (platform === 'darwin') {
     if (arch === 'arm64') return { name: 'opencode-darwin-arm64.zip', binary: 'opencode' };
     if (arch === 'x64') return { name: 'opencode-darwin-x64-baseline.zip', binary: 'opencode' };
