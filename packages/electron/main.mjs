@@ -2593,7 +2593,7 @@ const compareSemver = (left, right) => {
 };
 
 const parseGithubRepo = () => {
-  return { owner: 'openchamber', repo: 'openchamber' };
+  return { owner: 'lzdev42', repo: 'ocelot' };
 };
 
 const setupAutoUpdater = () => {
