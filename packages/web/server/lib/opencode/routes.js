@@ -2,6 +2,7 @@ import { createProjectIdFromPath } from '../projects/project-id.js';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { upgradeBundledOpenCode } from './bundled-upgrade.js';
 
 export const registerOpenCodeRoutes = (app, dependencies) => {
   const {
@@ -20,6 +21,9 @@ export const registerOpenCodeRoutes = (app, dependencies) => {
     refreshOpenCodeAfterConfigChange,
     buildOpenCodeUrl,
     getOpenCodeAuthHeaders,
+    resolveBundledOpenCodeCliPath,
+    clearResolvedOpenCodeBinary,
+    restartOpenCode,
   } = dependencies;
 
   let authLibrary = null;
@@ -155,16 +159,20 @@ export const registerOpenCodeRoutes = (app, dependencies) => {
 
   app.post('/api/opencode/upgrade', async (req, res) => {
     try {
-      if (await isBundledOpenCodeBinaryActive()) {
-        return res.status(409).json({
-          success: false,
-          error: 'OpenCode is bundled with OpenChamber Desktop and cannot be upgraded separately.',
-        });
-      }
-
       const target = typeof req.body?.target === 'string' && req.body.target.trim().length > 0
         ? req.body.target.trim()
         : undefined;
+
+      if (await isBundledOpenCodeBinaryActive()) {
+        const result = await upgradeBundledOpenCode({
+          targetVersion: target,
+          resolveBundledPath: resolveBundledOpenCodeCliPath,
+          clearResolvedBinary: clearResolvedOpenCodeBinary,
+          restartOpenCode,
+        });
+        return res.json(result);
+      }
+
       const response = await fetch(buildOpenCodeUrl('/global/upgrade', ''), {
         method: 'POST',
         headers: {
@@ -206,15 +214,7 @@ export const registerOpenCodeRoutes = (app, dependencies) => {
 
   app.get('/api/opencode/upgrade-status', async (_req, res) => {
     try {
-      if (await isBundledOpenCodeBinaryActive()) {
-        const current = await readOpenCodeCurrentVersion().catch(() => ({ ok: false, currentVersion: null }));
-        return res.json({
-          available: false,
-          currentVersion: current.ok ? current.currentVersion : null,
-          latestVersion: null,
-          source: 'bundled',
-        });
-      }
+      const isBundled = await isBundledOpenCodeBinaryActive();
 
       const [healthResponse, latestVersion] = await Promise.all([
         fetch(buildOpenCodeUrl('/global/health', ''), {
@@ -239,6 +239,7 @@ export const registerOpenCodeRoutes = (app, dependencies) => {
         available,
         currentVersion,
         latestVersion,
+        source: isBundled ? 'bundled' : undefined,
       });
     } catch (error) {
       return res.status(500).json({

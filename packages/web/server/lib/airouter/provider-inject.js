@@ -51,7 +51,7 @@ export async function injectAirouterProvider(webPort, routes, _configDir, refres
     name: 'AiRouter',
     npm: '@ai-sdk/openai-compatible',
     options: {
-      baseURL: `http://localhost:${webPort}/v1`,
+      baseURL: `http://localhost:${webPort}/api/airouter/v1`,
     },
     models: buildModelsFromRoutes(routes),
   };

@@ -113,6 +113,12 @@ const ensureExecutable = (filePath) => {
   }
 };
 
+const canExecuteCrossArch = (targetArch) => {
+  if (!targetArch || targetArch === process.arch) return true;
+  if (process.platform === 'darwin' && process.arch === 'arm64' && targetArch === 'x64') return true;
+  return false;
+};
+
 const download = async (url, destination) => {
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   const response = await fetch(url);
@@ -204,9 +210,14 @@ const main = async () => {
   fs.copyFileSync(extractedBinary, outputBinary);
   ensureExecutable(outputBinary);
 
-  const preparedVersion = readBinaryVersion(outputBinary);
-  if (preparedVersion !== version) {
-    throw new Error(`Prepared OpenCode CLI version mismatch: expected ${version}, got ${preparedVersion || 'unknown'}`);
+  const targetArch = process.env.ELECTRON_BUILDER_ARCH;
+  if (canExecuteCrossArch(targetArch)) {
+    const preparedVersion = readBinaryVersion(outputBinary);
+    if (preparedVersion !== version) {
+      throw new Error(`Prepared OpenCode CLI version mismatch: expected ${version}, got ${preparedVersion || 'unknown'}`);
+    }
+  } else {
+    console.log(`[electron] skipped executing prepared OpenCode CLI for cross-compilation (target: ${targetArch}, host: ${process.arch})`);
   }
 
   console.log(`[electron] prepared OpenCode CLI ${version}: ${outputBinary}`);

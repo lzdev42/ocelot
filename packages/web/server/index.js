@@ -1340,6 +1340,9 @@ async function main(options = {}) {
     scheduledTasksRuntime,
     getOpenChamberEventClients: () => uiOpenChamberEventClients,
     writeSseEvent,
+    resolveBundledOpenCodeCliPath,
+    clearResolvedOpenCodeBinary,
+    restartOpenCode,
   });
 
   const airouterRouter = createAirouterRouter({

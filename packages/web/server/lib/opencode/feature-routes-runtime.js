@@ -97,6 +97,9 @@ export const createFeatureRoutesRuntime = (dependencies) => {
       scheduledTasksRuntime,
       getOpenChamberEventClients,
       writeSseEvent,
+      resolveBundledOpenCodeCliPath,
+      clearResolvedOpenCodeBinary,
+      restartOpenCode,
     } = routeDependencies;
 
     registerSettingsUtilityRoutes(app, {
@@ -121,6 +124,9 @@ export const createFeatureRoutesRuntime = (dependencies) => {
       refreshOpenCodeAfterConfigChange,
       buildOpenCodeUrl,
       getOpenCodeAuthHeaders,
+      resolveBundledOpenCodeCliPath,
+      clearResolvedOpenCodeBinary,
+      restartOpenCode,
     });
 
     registerProjectIconRoutes(app, {
