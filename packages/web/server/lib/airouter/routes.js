@@ -260,7 +260,12 @@ export function createAirouterRoutes(config) {
             }
 
             if (isRetriable && hasFallback && !isClientAborted.value) {
-              addLog('warn', `Fallback from ${routeName} (HTTP ${response.status})`);
+              const nextRoute = fallbackChain[chainIndex + 1];
+              const nextConfig = routes[nextRoute];
+              addLog('warn', `Fallback ${routeName} → ${nextRoute} (HTTP ${response.status}, retries exhausted)`);
+              if (nextConfig) {
+                addLog('info', `Fallback target: ${nextConfig.model_id || nextRoute} @ ${nextConfig.endpoint || '?'}`);
+              }
               await tryRouteChain(chainIndex + 1);
               return;
             }
